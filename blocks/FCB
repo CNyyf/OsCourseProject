@@ -1,0 +1,4 @@
+root  1 0
+new /root 0 0
+hello /root 1 0
+new /root/hello 1 0
