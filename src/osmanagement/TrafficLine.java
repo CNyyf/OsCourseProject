@@ -5,6 +5,8 @@ import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -26,13 +28,17 @@ public class TrafficLine {
 	static int randomSetTime = 100;
 	static int printTime = 100;
 	
-	static boolean ableCross = true;
+	static Lock mtxCross= new ReentrantLock();
+	static Lock mtxSignalLight= new ReentrantLock();
+	static Lock mtxPrint= new ReentrantLock();
 	static boolean runSign = true;
 	static boolean randomSetSign = true;
 	volatile static int ableSignal = 0;
 	volatile private Car[][]carQueue = new Car[LINE_NUMBER][WHOLE_LENGTH];
 	private int ableValue;
 	volatile private int crossCarNumber = 0;
+	private Lock mtxLine = new ReentrantLock();//同一条路各项操作之间互斥
+	private Lock mtxLine2 = new ReentrantLock();//其他路对该路操作互斥
 	private Random randNum = new Random();
 
 	static int borderLength = 20;
@@ -67,6 +73,7 @@ public class TrafficLine {
 	private int popCarOnCross(TrafficLine turnTl)
 	{
 		//System.out.println(ableValue + "!!!" + "crossCarNumber");
+		mtxLine.lock();
 		int abs = ableSignal;
 		//System.out.println("PopCar");
 
@@ -80,8 +87,10 @@ public class TrafficLine {
 				crossCarNumber--;
 				if (crossCarNumber == 0)
 				{
-					ableCross = true;
+					mtxLine.unlock();
+					mtxCross.unlock();
 					//System.out.println(ableValue + " endtagA");
+					mtxLine.lock();
 				}
 			}
 			for (int i = IN_ON_LENGTH - 1; i > IN_LENGTH + 1; i--)
@@ -112,13 +121,17 @@ public class TrafficLine {
 					else direct = 0;
 					if(turnTl.carQueue[direct][IN_LENGTH + 1] == null)
 					{
+						turnTl.mtxLine2.lock();
 						turnTl.carQueue[direct][IN_LENGTH + ON_LENGTH] = carQueue[j][IN_LENGTH];
 						carQueue[j][IN_LENGTH] = null;
+						turnTl.mtxLine2.unlock();
 						crossCarNumber--;
 						if (crossCarNumber == 0)
 						{
-							ableCross = true;
+							mtxLine.unlock();
+							mtxCross.unlock();
 							//System.out.println(ableValue + " endtagA");
+							mtxLine.lock();
 						}
 					}
 				}
@@ -133,16 +146,10 @@ public class TrafficLine {
 				crossCarNumber++;
 				if (crossCarNumber == 1)
 				{
-					if(ableCross)
-					{
-						ableCross = false;
-					}
-					else
-					{
-						crossCarNumber--;
-						return 0;
-					}
+					mtxLine.unlock();
+					mtxCross.lock();
 					//System.out.println(ableValue + " start");
+					mtxLine.lock();
 				}
 				if (abs == ableValue || (carQueue[j][ENTRANCE] == null) ? true : carQueue[j][ENTRANCE].priority < 2)
 				{
@@ -152,8 +159,10 @@ public class TrafficLine {
 				else if (crossCarNumber == 1)
 				{
 					crossCarNumber--;
-					ableCross = true;
+					mtxLine.unlock();
+					mtxCross.unlock();
 					//System.out.println(ableValue + " endtagB");
+					mtxLine.lock();
 				}
 				else
 				{
@@ -161,11 +170,17 @@ public class TrafficLine {
 				}
 			}
 		}
+		mtxLine.unlock();
 		return 1;
 	}
 	
 	private int popCarOnLine()
 	{
+		//System.out.println(ableValue + "!!!" + "crossCarNumber");
+		mtxLine.lock();
+		mtxLine2.lock();
+		//System.out.println("PopCar");
+
 		//未到达路口或已离开路口的车辆向前移动
 		for (int j = 0; j != LINE_NUMBER; j++)
 		{
@@ -212,6 +227,9 @@ public class TrafficLine {
 				}
 			}
 		}
+
+		mtxLine2.unlock();
+		mtxLine.unlock();
 		return 1;
 	}
 	
@@ -234,6 +252,7 @@ public class TrafficLine {
 		int randNumber = 0;
 		int lid = 0;
 		int direct = 0;
+		mtxLine.lock();
 		randNumber = randNum.nextInt(360360);
 		lid = randNumber % LINE_NUMBER;
 		randNumber %= 97;
@@ -246,20 +265,36 @@ public class TrafficLine {
 				setCar(lid, nb, 2, direct);
 			else
 				setCar(lid, nb, 0, direct);
+			mtxLine.unlock();
 			return true;
 		}
+		mtxLine.unlock();
 		return false;
 	}
 	
 	static private int turnSignal()
 	{
-		if (ableSignal == 0)
+		for (;runSign;)
 		{
-			ableSignal = 1;
-		}
-		else if (ableSignal == 1)
-		{
-			ableSignal = 0;
+			mtxSignalLight.lock();
+			//System.out.println("turnSignal");
+			//System.out.println(ableSignal);
+			if (ableSignal == 0)
+			{
+				ableSignal = 1;
+			}
+			else if (ableSignal == 1)
+			{
+				ableSignal = 0;
+			}
+			System.out.println(ableSignal);
+			mtxSignalLight.unlock();
+			try {
+				Thread.sleep(lightTime);
+			} catch (InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
 		}
 		return 1;
 	}
@@ -296,9 +331,7 @@ public class TrafficLine {
 			public void actionPerformed(ActionEvent e)
 			{
 				if(randomSetSign == true)
-				{
-					randomSetSign = false;
-				}
+				randomSetSign = false;
 			}});
 		button[1].addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
@@ -306,6 +339,12 @@ public class TrafficLine {
 				if(randomSetSign == false)
 				{
 					randomSetSign = true;
+					Thread thSet1 = new Thread(new Runnable()
+						{public void run(){TrafficLine.sRandomSetCar(tl1);}});
+					Thread thSet2 = new Thread(new Runnable()
+						{public void run(){TrafficLine.sRandomSetCar(tl2);}});
+					thSet1.start();
+					thSet2.start();
 				}
 			}
 	});
@@ -406,61 +445,74 @@ public class TrafficLine {
 	static private int drawFrame(TrafficLine tl1, TrafficLine tl2)
 	{
 		//循环操作开始，显示车辆状况
-		for (int j = 0; j != LINE_NUMBER; j++)
+		for (; runSign;)
 		{
-			for (int i = 0; i != WHOLE_LENGTH; i++)
+			tl1.mtxLine.lock();
+			tl2.mtxLine.lock();		
+			for (int j = 0; j != LINE_NUMBER; j++)
 			{
-				if(tl1.carQueue[j][i]==null)
-					carMap[0][j][i].setVisible(false);
-				else
+				for (int i = 0; i != WHOLE_LENGTH; i++)
 				{
-					if(tl1.carQueue[j][i].direct == 1)
-					{
-						if(tl1.carQueue[j][i].priority == 2)
-							carMap[0][j][i].setBackground(colorCarNormalTurn);
-						else
-							carMap[0][j][i].setBackground(colorCarSpecialTurn);
-					}
+					if(tl1.carQueue[j][i]==null)
+						carMap[0][j][i].setVisible(false);
 					else
 					{
-						if(tl1.carQueue[j][i].priority == 2)
-							carMap[0][j][i].setBackground(colorCarNormalAhead);
+						if(tl1.carQueue[j][i].direct == 1)
+						{
+							if(tl1.carQueue[j][i].priority == 2)
+								carMap[0][j][i].setBackground(colorCarNormalTurn);
+							else
+								carMap[0][j][i].setBackground(colorCarSpecialTurn);
+						}
 						else
-							carMap[0][j][i].setBackground(colorCarSpecialAhead);
+						{
+							if(tl1.carQueue[j][i].priority == 2)
+								carMap[0][j][i].setBackground(colorCarNormalAhead);
+							else
+								carMap[0][j][i].setBackground(colorCarSpecialAhead);
+						}
+						carMap[0][j][i].setVisible(true);
 					}
-					carMap[0][j][i].setVisible(true);
-				}
-				if(tl2.carQueue[j][i]==null)
-					carMap[1][j][i].setVisible(false);
-				else
-				{
-					if(tl2.carQueue[j][i].direct == 1)
-					{
-						if(tl2.carQueue[j][i].priority == 2)
-							carMap[1][j][i].setBackground(colorCarNormalTurn);
-						else
-							carMap[1][j][i].setBackground(colorCarSpecialTurn);
-						carMap[1][j][i].setVisible(true);
-					}
+					if(tl2.carQueue[j][i]==null)
+						carMap[1][j][i].setVisible(false);
 					else
 					{
-						if(tl2.carQueue[j][i].priority == 2)
-							carMap[1][j][i].setBackground(colorCarNormalAhead);
+						if(tl2.carQueue[j][i].direct == 1)
+						{
+							if(tl2.carQueue[j][i].priority == 2)
+								carMap[1][j][i].setBackground(colorCarNormalTurn);
+							else
+								carMap[1][j][i].setBackground(colorCarSpecialTurn);
+							carMap[1][j][i].setVisible(true);
+						}
 						else
-							carMap[1][j][i].setBackground(colorCarSpecialAhead);
-						carMap[1][j][i].setVisible(true);
+						{
+							if(tl2.carQueue[j][i].priority == 2)
+								carMap[1][j][i].setBackground(colorCarNormalAhead);
+							else
+								carMap[1][j][i].setBackground(colorCarSpecialAhead);
+							carMap[1][j][i].setVisible(true);
+						}
 					}
 				}
 			}
-		}
-		
-		for(int i = 0; i != 4; i++)
-		{
-			if(i%2 == ableSignal)
-				signalLight[i].setBackground(Color.green);
-			else
-				signalLight[i].setBackground(Color.red);
-		}
+			
+			for(int i = 0; i != 4; i++)
+			{
+				if(i%2 == ableSignal)
+					signalLight[i].setBackground(Color.green);
+				else
+					signalLight[i].setBackground(Color.red);
+			}
+			tl2.mtxLine.unlock();
+			tl1.mtxLine.unlock();
+			try {
+				Thread.sleep(printTime);
+			} catch (InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		}	
 		return 1;
 	}
 	
@@ -468,45 +520,88 @@ public class TrafficLine {
 	{
 		TrafficLine tl1 = new TrafficLine(0);
 		TrafficLine tl2 = new TrafficLine(1);
-		int carNum = 0;
 		drawInit(tl1, tl2);
-		for(int countFlag = 0; runSign; countFlag++){
-			if(countFlag > 79)
-			{
-				countFlag = 0;
-			}
-			if(randomSetSign)
-			{
-				if(tl1.randomSetCar(carNum))
-				{
-					carNum++;
-				}
-				if(tl2.randomSetCar(carNum))
-				{
-					carNum++;
-				}
-			}
-			if(countFlag%2 == 0)
-			{
-				tl1.popCarOnLine();
-				tl1.popCarOnCross(tl2);
-				tl2.popCarOnLine();
-				tl2.popCarOnCross(tl1);
-			}
-			if(countFlag%80 == 0)
-			{
-				turnSignal();
-			}
-			drawFrame(tl1, tl2);
+		Thread thTurn = new Thread(new Runnable()
+			{public void run(){TrafficLine.turnSignal();}});
+		Thread thSet1 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sRandomSetCar(tl1);}});
+		Thread thPopC1 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sPopCarOnCross(tl1, tl2);}});
+		Thread thPopL1 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sPopCarOnLine(tl1);}});
+		Thread thSet2 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sRandomSetCar(tl2);}});
+		Thread thPopC2 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sPopCarOnCross(tl2, tl1);}});
+		Thread thPopL2 = new Thread(new Runnable()
+			{public void run(){TrafficLine.sPopCarOnLine(tl2);}});
+		Thread thDrawFrame = new Thread(new Runnable()
+			{public void run(){TrafficLine.drawFrame(tl1, tl2);}});
+		thTurn.start();
+		thSet1.start();
+		thPopC1.start();
+		thPopL1.start();
+		thSet2.start();
+		thPopC2.start();
+		thPopL2.start();
+		thDrawFrame.start();
+	}
+	
+	static private int sPopCarOnCross(TrafficLine tl, TrafficLine turnTl)
+	{
+		for (;runSign;)
+		{
+			tl.popCarOnCross(turnTl);
 			try {
-				Thread.sleep(100);
+				Thread.sleep(moveTime);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				// TODO 自动生成的 catch 块
 				e.printStackTrace();
 			}
 		}
+		return 1;
 	}
-
+	
+	static private int sPopCarOnLine(TrafficLine tl)
+	{
+		try {
+			Thread.sleep(moveTime/8);
+		} catch (InterruptedException e) {
+			// TODO 自动生成的 catch 块
+			e.printStackTrace();
+		}
+		for (;runSign;)
+		{
+			tl.popCarOnLine();
+			try {
+				Thread.sleep(3*moveTime/4);
+			} catch (InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		}
+		return 1;
+	}
+	
+	static private int sRandomSetCar(TrafficLine tl)
+	{
+		int carNum = 0;
+		for (;randomSetSign;)
+		{
+			//System.out.println("randomSetCar_s");
+			if (tl.randomSetCar(carNum))
+				carNum++;
+			try {
+				Thread.sleep(randomSetTime);
+			} catch (InterruptedException e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+				return 1;
+			}
+		}
+		return 1;
+	}
+	
 	static public void main(String[] args) {
 		startRunning();
 	}
