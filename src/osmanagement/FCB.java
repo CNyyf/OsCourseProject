@@ -15,7 +15,8 @@ import osmanagement.FCB;
 
 public class FCB {
 	static final int BLOCK_SIZE = 10;
-	static final int VOLUMN = 64;
+	static final int VOLUMN = 256;
+	static boolean []blockFree = new boolean[VOLUMN];
 	static int countBlockFree = VOLUMN;
 	static ArrayList<Integer> listBlockFree = new ArrayList<Integer>();
     static public final int FILE = 0;
@@ -39,18 +40,32 @@ public class FCB {
     static String getFCBPath(){
     	return FCBPath;
     }
+    static boolean printBlockFree(){
+    	for(int i = 0; i != VOLUMN; i++){
+    		System.out.print(blockFree[i] + " ");
+    		if(i % 20 == 19) System.out.println("");
+    	}
+    	return true;
+    }
     static int fetchFirstBlockFree(){
     	if(listBlockFree.size() == 0){
     		return -1;
     	}
     	int firstBlockFree = listBlockFree.get(0);
     	listBlockFree.remove(0);
-    	countBlockFree--;
+    	if(blockFree[firstBlockFree]){
+    		blockFree[firstBlockFree] = false;
+    		countBlockFree--;
+    	}
     	return firstBlockFree;
     }
     static boolean releaseLastBlockFree(int lastBlockFree){
     	listBlockFree.add(new Integer(lastBlockFree));
-    	countBlockFree++;
+    	if(!blockFree[lastBlockFree]){
+    		blockFree[lastBlockFree] = true;
+    		countBlockFree++;
+    		return true;
+    	}
     	return false;
     }
     static String getPath(DefaultMutableTreeNode node){
@@ -145,6 +160,9 @@ public class FCB {
     	loadFileBlocks();
     	Scanner input = null;
     	DefaultMutableTreeNode root = null;
+    	for(int i = 0; i != VOLUMN; i++){
+    		blockFree[i] = true;
+    	}
     	countBlockFree = VOLUMN;
     	try {
 			input = new Scanner(new File(FCBfilePath));
@@ -158,9 +176,6 @@ public class FCB {
 			}
 			else{
 				root = new DefaultMutableTreeNode(new FCB("root", FOLDER));
-			}
-			for(int i = 0; i != VOLUMN; i++){
-				listBlockFree.add(new Integer(i));
 			}
 			while(input.hasNextLine()){
 				temp = input.nextLine();
@@ -178,11 +193,18 @@ public class FCB {
 						int address = tempScan.nextInt();
 						//System.out.println(address);
 						if(address > -1 && address < VOLUMN){
-							listBlockFree.remove(new Integer(address));
-							fcb.blocks.add(new Integer(address));
-							countBlockFree--;
+							if(blockFree[address]){
+								fcb.blocks.add(new Integer(address));
+								blockFree[address] = false;
+								countBlockFree--;
+							}
 						}
 					}
+				}
+			}
+			for(int i = 0; i != VOLUMN; i++){
+				if(blockFree[i]){
+					listBlockFree.add(new Integer(i));
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -225,6 +247,14 @@ public class FCB {
 	    }
     	return true;
     }
+    static int firstBlockFree(){
+    	for(int i = 0; i != VOLUMN; i++){
+    		if(blockFree[i]){
+    			return i;
+    		}
+    	}
+    	return -1;
+    }
     //FCB²Ù×÷ÊµÏÖ
     static String getName(DefaultMutableTreeNode parent, String n){
     	if(parent == null){
@@ -241,6 +271,9 @@ public class FCB {
     		return null;
     	}
     	root.removeAllChildren();
+    	for(int i = 0; i != VOLUMN; i++){
+    		blockFree[i] = true;
+    	}
     	countBlockFree = VOLUMN;
     	listBlockFree.clear();
     	for(int i = 0; i != VOLUMN; i++){
@@ -453,6 +486,6 @@ public class FCB {
     	return 1;
     }
     static boolean isBlockFree(int index){
-    	return listBlockFree.contains(index);
+    	return blockFree[index];
     }
 }

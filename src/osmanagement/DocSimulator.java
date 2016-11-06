@@ -21,10 +21,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
-import osmanagement.DocSimulator;
-import osmanagement.FCB;
-import osmanagement.MyDefaultTreeCellRenderer;
-
 public class DocSimulator {
 	private static final int WID1 = 200; 
 	private static final int WID2 = WID1 + 230;
