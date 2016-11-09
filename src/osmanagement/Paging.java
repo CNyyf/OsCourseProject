@@ -16,7 +16,7 @@ import osmanagement.Instruction;
 import osmanagement.Page;
 import osmanagement.Paging;
 
-public class Paging {
+public class Paging implements FuctionItem {
 	Page memory[] = new Page[PforMEM];
 	Page disk[] = new Page[PforDISK];
 	boolean memoryFull = false;
@@ -328,7 +328,7 @@ public class Paging {
 		}
 		return true;
 	}
-	public Paging(){
+	public void init(){
 		for(int i = 0; i != PforDISK; i++){
 			disk[i] = new Page(i);
 		}
@@ -525,6 +525,11 @@ public class Paging {
 			}
 		});
 		reStart(0);
+	}
+	@Override
+	public void excuteFuction() {
+		Paging p = new Paging();
+		p.init();
 	}
 	
 }

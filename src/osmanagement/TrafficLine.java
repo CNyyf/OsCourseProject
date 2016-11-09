@@ -12,7 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-public class TrafficLine {
+public class TrafficLine implements FuctionItem{
 	static final int HALF_LINE_NUMBER = 2;//车道数，在开始时可以更改
 	static final int LINE_NUMBER = HALF_LINE_NUMBER * 2;
 	static final int IN_LENGTH = 6;
@@ -69,7 +69,9 @@ public class TrafficLine {
 			}
 		}
 	}
-	
+	public TrafficLine() {
+		this(-1);
+	}
 	private int popCarOnCross(TrafficLine turnTl)
 	{
 		//System.out.println(ableValue + "!!!" + "crossCarNumber");
@@ -603,6 +605,11 @@ public class TrafficLine {
 	}
 	
 	static public void main(String[] args) {
+		startRunning();
+	}
+	
+	@Override
+	public void excuteFuction() {
 		startRunning();
 	}
 }

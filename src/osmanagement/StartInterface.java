@@ -38,27 +38,29 @@ public class StartInterface {
 		buttonCPU.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				Thread th = new Thread(new Runnable()
-				{public void run(){TrafficLine.startRunning();}});
-				th.start();
+				FuctionItem fi = new TrafficLine();
+				fi.excuteFuction();
 				frame.setVisible(false);
 			}});
 		buttonMemAlloc.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				new MemAlloc();
+				FuctionItem fi = new MemAlloc();
+				fi.excuteFuction();
 				frame.setVisible(false);
 			}});
 		buttonPaging.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				new Paging();
+				FuctionItem fi = new Paging();
+				fi.excuteFuction();
 				frame.setVisible(false);
 			}});
 		buttonDoc.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
-				new DocSimulator();
+				FuctionItem fi = new DocSimulator();
+				fi.excuteFuction();
 				frame.setVisible(false);
 			}});
 	}

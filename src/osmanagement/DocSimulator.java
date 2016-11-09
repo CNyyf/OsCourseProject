@@ -21,7 +21,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
-public class DocSimulator {
+public class DocSimulator implements FuctionItem {
 	private static final int WID1 = 200; 
 	private static final int WID2 = WID1 + 230;
 	private static final int WID3 = WID2 + 230;
@@ -60,7 +60,7 @@ public class DocSimulator {
 	private JButton buttonHelp;
 	private JButton buttonFormat;
 	
-	public DocSimulator(){
+	public void init(){
 		frame = new JFrame("osManagement_document");
 		frame.setSize(WID3 + 20, HEI3 + 40);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -559,5 +559,11 @@ public class DocSimulator {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new DocSimulator();
+	}
+
+	@Override
+	public void excuteFuction() {
+		DocSimulator ds = new DocSimulator();
+		ds.init();
 	}
 }

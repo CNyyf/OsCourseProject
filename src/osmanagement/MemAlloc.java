@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 import osmanagement.MemBlock;
 import osmanagement.MemList;
 
-public class MemAlloc {
+public class MemAlloc implements FuctionItem {
 	private volatile MemList freeList = new MemList();//MemBlock(-1, 0, MEMORY_SIZE);
 	private volatile MemList busyList = new MemList();
 
@@ -295,7 +295,7 @@ public class MemAlloc {
 		//ma.textBusy.paintImmediately(ma.textBusy.getBounds());
 		return true;
 	}
-	public MemAlloc(){
+	public void init(){
 		frame = new JFrame("osManagement_memAlloc");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(BORDER*4 + MEMORY_WIDTH + OUTPUT_WIDTH*2 + 20, BORDER*2 + MEMORY_SIZE + 40);
@@ -473,6 +473,11 @@ public class MemAlloc {
 				clear();
 			}});
 		clear();
+	}
+	@Override
+	public void excuteFuction() {
+		MemAlloc ma = new MemAlloc();
+		ma.init();
 	}
 	
 }
