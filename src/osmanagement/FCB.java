@@ -15,13 +15,13 @@ import osmanagement.FCB;
 
 public class FCB {
 	static final int BLOCK_SIZE = 10;
-	static final int VOLUMN = 256;
+	static final int VOLUMN = 64;
 	static boolean []blockFree = new boolean[VOLUMN];
 	static int countBlockFree = VOLUMN;
 	static ArrayList<Integer> listBlockFree = new ArrayList<Integer>();
     static public final int FILE = 0;
     static public final int FOLDER = 1;
-    static private String blocksFolderPath = "blocks";
+    protected static String blocksFolderPath = "blocks";
 	static private String FCBPath = "blocks/FCB";
     String name;
     private int type;
@@ -79,18 +79,10 @@ public class FCB {
     static String getParentPath(DefaultMutableTreeNode node){
     	return getPath((DefaultMutableTreeNode) node.getParent());
     }
+    //change: chain method definition
     static DefaultMutableTreeNode setNode(DefaultMutableTreeNode root, String p, String n, int t){
     	DefaultMutableTreeNode parent = getNodeByPath(root, p);
-    	if(parent == null){
-    		return null;
-    	}
-    	if(((FCB)parent.getUserObject()).type == FCB.FILE){
-    		return null;
-    	}
-    	String name = getName(parent, n);
-    	DefaultMutableTreeNode node = new DefaultMutableTreeNode(new FCB(name, t));
-    	parent.add(node);
-    	return node;
+    	return createFCB(parent, n ,t);
     }
     static DefaultMutableTreeNode getNodeByPath(DefaultMutableTreeNode root, String p){
     	DefaultMutableTreeNode parent = root;
@@ -172,10 +164,10 @@ public class FCB {
 				temp = input.nextLine();
 				//System.out.println(temp);
 				tempScan = new Scanner(temp);
-				root = new DefaultMutableTreeNode(new FCB(tempScan.next(), FOLDER));
+				root = createNode(createFCB(tempScan.next(), FOLDER));
 			}
 			else{
-				root = new DefaultMutableTreeNode(new FCB("root", FOLDER));
+				root = createNode(createFCB("root", FOLDER));
 			}
 			while(input.hasNextLine()){
 				temp = input.nextLine();
@@ -209,7 +201,7 @@ public class FCB {
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("File Not Found!");
-			root = new DefaultMutableTreeNode(new FCB("root", FOLDER));
+			root = createNode(createFCB("root", FOLDER));
 	    	listBlockFree.clear();
 	    	for(int i = 0; i != VOLUMN; i++){
 	    		listBlockFree.add(new Integer(i));
@@ -286,206 +278,122 @@ public class FCB {
     	if(parent == null){
     		return null;
     	}
-    	FCB parentFcb = (FCB)parent.getUserObject();
-    	if(parentFcb.type == FILE){
-    		return null;
-    	}
-    	String name = getName(parent, n);
-    	DefaultMutableTreeNode node = new DefaultMutableTreeNode(new FCB(name, t));
-    	parent.add(node);
-    	return node;
+    	return ((FCB)parent.getUserObject()).cCreateFCB(n, t);
     }
     static boolean deleteFCB(DefaultMutableTreeNode parent){
     	if(parent == null){
     		return false;
     	}
     	FCB fcb = (FCB)parent.getUserObject();
-    	if(fcb.isOpened){
-    		return false;
-    	}
-    	if(fcb.type == FOLDER){
-    		while(parent.getChildCount() != 0){
-    			deleteFCB((DefaultMutableTreeNode) parent.getFirstChild());
-    		}
-    	}
-    	else{
-    		for(int i = 0; i != fcb.blocks.size(); i++){
-    			releaseLastBlockFree(fcb.blocks.get(i));
-    		}
-    	}
-    	parent.removeFromParent();
-    	return true;
+    	return fcb.mainDeleteFCB();
     }
     static int moveFCB(DefaultMutableTreeNode node, DefaultMutableTreeNode parent){
     	if(node == null || parent == null){
     		return 0;
     	}
-    	for(DefaultMutableTreeNode temp = parent; temp != null; temp = (DefaultMutableTreeNode) temp.getParent()){
-			if(temp == node){
-				return -1;
-			}
-    	}
-    	if(((FCB)parent.getUserObject()).type == FILE){
-    		parent = (DefaultMutableTreeNode) parent.getParent();
-    		//return false;
-    	}
-    	if(node.getParent() == parent){
-    		return 1;
-    	}
-    	FCB fcb = (FCB)node.getUserObject();
-    	String name = fcb.name;
-    	fcb.name = getName(parent, name);
-    	node.removeFromParent();
-    	parent.add(node);
-    	return 1;
+    	return ((FCB)parent.getUserObject()).mainMoveFCB(node);
     }
     //文件操作实现
 	static String openFile(DefaultMutableTreeNode node){
-		String text = "";
     	if(node == null){
     		return null;
     	}
     	FCB fcb = (FCB)node.getUserObject();
-    	if(fcb.type == FOLDER){
-    		return null;
-    	}
-    	for(int i = 0; i != fcb.blocks.size(); i++){
-    		File file = new File(blocksFolderPath + "/" + fcb.blocks.get(i));
-    		try {
-				@SuppressWarnings("resource")
-				Scanner input = new Scanner(file);
-				while(input.hasNextLine()){
-					text += (input.nextLine() + "\n");
-				}
-			} catch (FileNotFoundException e) {
-				file.delete();
-				try {
-					file.createNewFile();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-			}
-    	}
-    	return text;
+    	return fcb.cOpenFile();
     }
     static int storeFile(String text, DefaultMutableTreeNode node){
     	if(text == null || node == null){
     		return 0;
     	}
     	FCB fcb = (FCB)node.getUserObject();
-    	if(fcb.type == FOLDER){
-    		return 0;
-    	}
-    	int sizeCounter = 0;
-    	int pageCounter;
-    	String temp;
-    	@SuppressWarnings("resource")
-		Scanner input = new Scanner(text);
-    	//System.out.println("*" + text.getText());
-    	for(;input.hasNextLine();){
-    		input.nextLine();
-    		sizeCounter++;
-    	}
-    	//计算所需页数
-    	if(sizeCounter == 0){
-    		pageCounter = 0;
-    	}
-    	else{
-    		pageCounter = (sizeCounter - 1)/BLOCK_SIZE + 1;
-    	}
-    	//按所需页数修改FCB中存储器页数
-    	if(pageCounter < fcb.blocks.size()){
-    		while(pageCounter < fcb.blocks.size()){
-    			releaseLastBlockFree(fcb.blocks.get(pageCounter));
-    			fcb.blocks.remove(pageCounter);
-    		}
-    	}
-    	else if(pageCounter > fcb.blocks.size()){
-    		if(countBlockFree + fcb.blocks.size() < pageCounter){
-    			return -1;
-    		}
-    		while(pageCounter > fcb.blocks.size()){
-    			int freeAddress = fetchFirstBlockFree();
-    			fcb.blocks.add(new Integer(freeAddress));
-    		}
-    	}
-    	//保存文件
-    	input = new Scanner(text);
-    	//System.out.println("*" + text.getText());
-    	BufferedWriter bufferedwriter;
-    	for(int i = 0; i != pageCounter && input.hasNextLine(); i++){
-			//System.out.println(i);
-    		try {
-				bufferedwriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(blocksFolderPath + "/" + fcb.blocks.get(i)))));
-	    		for(int j = 0; j != BLOCK_SIZE && input.hasNextLine(); j++){
-	    			temp = input.nextLine();
-	    			try {
-	    				//System.out.println(temp);
-						bufferedwriter.write(temp);
-		    			bufferedwriter.newLine();
-		    			//System.out.println("行写入成功");
-					} catch (IOException e) {
-						e.printStackTrace();
-		    			//System.out.println("行写入失败");
-						return -2;
-					}
-	    		}
-	    		try {
-					bufferedwriter.close();
-	    			//System.out.println("文件写入成功");
-				} catch (IOException e) {
-					e.printStackTrace();
-	    			//System.out.println("文件写入失败");
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-    			//System.out.println("未找到文件");
-				return -2;
-			}
-    	}
-    	return 1;
+    	return fcb.cStoreFile(text);
     }
     static int copyFile(DefaultMutableTreeNode node, DefaultMutableTreeNode parent){
-    	if(node == null){
-    		return 0;
-    	}
-    	if(parent == null){
-    		parent = (DefaultMutableTreeNode) node.getParent();
-    	}
     	if(parent == null){
     		return 0;
     	}
-    	if(((FCB)parent.getUserObject()).type == FILE){
-    		parent = (DefaultMutableTreeNode) parent.getParent();
-    		//return 0;
-    	}
-    	FCB fcb = (FCB)node.getUserObject();
-
-		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(new FCB(getName(parent, fcb.name), fcb.type));
-    	parent.add(newNode);
-    	if(storeFile(openFile(node), newNode) == -1){
-    		newNode.removeFromParent();
-    		return -1;
-    	}
-    	if(fcb.type == FILE){
-        	return 1;
-    	}
-    	else{
-    		for(DefaultMutableTreeNode temp = parent; temp != null; temp = (DefaultMutableTreeNode) temp.getParent()){
-    			if(temp == node){
-    				newNode.removeFromParent();
-    				return -2;
-    			}
-    		}
-    		for(int i = 0; i != node.getChildCount(); i++){
-    			if(copyFile((DefaultMutableTreeNode) node.getChildAt(i), newNode) == -1){
-    				return -1;
-    			}
-    		}
-    	}
-    	return 1;
+    	FCB fcb = (FCB)parent.getUserObject();
+    	return fcb.mainCopyFCB(node);
     }
     static boolean isBlockFree(int index){
     	return blockFree[index];
+    }
+    
+    //change: new
+    DefaultMutableTreeNode theNode;//the DefaultMutableTreeNode which holds this FCB object
+    //factory method
+    static FCB createFCB(String n, int t) {
+    	if(t == FILE) {
+    		return new FileFCB(n);
+    	}
+    	else if(t == FOLDER) {
+    		return new FolderFCB(n);
+    	}
+    	else {
+    		return null;
+    	}
+    }
+    static DefaultMutableTreeNode createNode(FCB fcb) {
+    	DefaultMutableTreeNode product = new DefaultMutableTreeNode(fcb);
+    	fcb.theNode = product;
+    	return product;
+    }
+    DefaultMutableTreeNode cCreateFCB(String n, int t){return null;}
+    boolean mainDeleteFCB() {
+    	//System.out.println(this);
+    	if(isOpened){
+    		return false;
+    	}
+    	if(cDeleteFCB()) {
+    		theNode.removeFromParent();
+    		return true;
+    	}
+    	return false;
+    	
+    }
+    boolean cDeleteFCB() {
+    	return false;
+    }
+    int mainMoveFCB(DefaultMutableTreeNode node) {
+    	if(node == null) {
+    		return 0;
+    	}
+    	for(DefaultMutableTreeNode temp = theNode; temp != null; temp = (DefaultMutableTreeNode) temp.getParent()){
+			if(temp == node){
+				return -1;
+			}
+    	}
+    	return cMoveFCB(node);
+    }
+    int cMoveFCB(DefaultMutableTreeNode node) {
+    	return 0;
+    }
+    String cOpenFile() {
+    	return null;
+    }
+    int cStoreFile(String text) {
+    	return 0;
+    }
+    int mainCopyFCB(DefaultMutableTreeNode node) {
+    	if(node == null){
+    		return 0;
+    	}
+    	for(DefaultMutableTreeNode temp = theNode; temp != null; temp = (DefaultMutableTreeNode) temp.getParent()){
+			if(temp == node){
+				return -2;
+			}
+    	}
+    	return cCopyFCB(node);
+    }
+    int cCopyFCB(DefaultMutableTreeNode node) {
+    	return 0;
+    }
+    int mainDeepCopyInto(DefaultMutableTreeNode parent) {
+    	DefaultMutableTreeNode newNode = createNode(createFCB(getName(parent, name), type));
+    	parent.add(newNode);
+    	return cDeepCopyInto(parent, newNode);
+    }
+    int cDeepCopyInto(DefaultMutableTreeNode parent, DefaultMutableTreeNode newNode) {
+    	return 0;
     }
 }

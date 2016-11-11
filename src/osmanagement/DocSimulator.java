@@ -558,7 +558,7 @@ public class DocSimulator implements FuctionItem {
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new DocSimulator();
+		new DocSimulator().excuteFuction();
 	}
 
 	@Override
