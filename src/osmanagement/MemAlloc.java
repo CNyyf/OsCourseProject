@@ -3,6 +3,7 @@ package osmanagement;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,9 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-
-import osmanagement.MemBlock;
-import osmanagement.MemList;
 
 public class MemAlloc implements FuctionItem {
 	private volatile MemList freeList = new MemList();//MemBlock(-1, 0, MEMORY_SIZE);
@@ -89,24 +87,24 @@ public class MemAlloc implements FuctionItem {
 			textOutput.setText("Cannot find the thread.");
 			return false;
 		}
-		MemBlock itmb = freeList.head;
+		MemBlock itmb = freeList.head();
 		MemBlock lastmb = null;
 		MemBlock nextmb = null;
 		int mbStart = mb.start;
 		int mbEnd = mb.end();
 		//搜索释放的内存在空闲表内的位置
-		for(int i = 0; i != freeList.counter; i++){
+		for(int i = 0; i != freeList.counter(); i++){
 			if(itmb.start >= mbEnd){
 				nextmb = itmb;
-				if(itmb != freeList.head){
-					lastmb = itmb.last;	
+				if(itmb != freeList.head()){
+					lastmb = freeList.last(itmb);	
 				}
 				break;
 			}
-			itmb = itmb.next;
+			itmb = freeList.next(itmb);
 		}
 		if(nextmb == null){
-			lastmb = freeList.tail;
+			lastmb = freeList.tail();
 		}
 		//先把该空间置入空闲表，然后和前后合并
 		busyList.erase(mb);
@@ -141,15 +139,15 @@ public class MemAlloc implements FuctionItem {
 		return true;
 	}
 	private boolean freeMemRandom(){
-		MemBlock itmb = busyList.head;
+		MemBlock itmb = busyList.head();
 		if(itmb == null){
 			textOutput.setText("No thread to free.");
 			return false;
 		}
 		else{
-			int location = randNum.nextInt(busyList.counter);
+			int location = randNum.nextInt(busyList.counter());
 			for(int i = 0; i != location; i++){
-				itmb = itmb.next;
+				itmb = busyList.next(itmb);
 			}
 			freeMem(itmb);
 		}
@@ -271,28 +269,20 @@ public class MemAlloc implements FuctionItem {
 		return true;
 	}
 	private boolean paint(){
-		MemBlock itfl = freeList.head;
-		MemBlock itbl = busyList.head;
-		int sizefl = freeList.counter;
-		int sizebl = busyList.counter;
 		textFree.setText("start\tsize\tend\n");
 		textBusy.setText("id\tstart\tsize\tend\n");
-		for(int i = 0; i != sizefl; i++){
+		for(MemBlock itfl : freeList.list) {
 			textFree.append(itfl.start + "\t" + itfl.size + "\t" + itfl.end() + "\n");
 			for(int j = itfl.start; j != itfl.end(); j++){
 				memBlock[j].setBackground(colorFree);
 			}
-			itfl = itfl.next;
 		}
-		for(int i = 0; i != sizebl; i++){
+		for(MemBlock itbl : busyList.list) {
 			textBusy.append(itbl.tid + "\t" + itbl.start + "\t" + itbl.size + "\t" + itbl.end() + "\n");
 			for(int j = itbl.start; j != itbl.end(); j++){
 				memBlock[j].setBackground(colorBusy);
 			}
-			itbl = itbl.next;
 		}
-		//ma.textFree.paintImmediately(ma.textFree.getBounds());
-		//ma.textBusy.paintImmediately(ma.textBusy.getBounds());
 		return true;
 	}
 	public void init(){
@@ -483,116 +473,109 @@ public class MemAlloc implements FuctionItem {
 }
 
 class MemList{
-	MemBlock head = null;
-	MemBlock tail = null;
-	int counter = 0;
+	ArrayList<MemBlock> list = new ArrayList<MemBlock>();
+	
 	MemBlock erase(MemBlock mb){
-		if(mb == null) return null;
-		if(counter == 1){
-			head = null;
-			tail = null;
+		if(list.remove(mb)) {
+			return mb;
 		}
-		else{
-			mb.last.next = mb.next;
-			mb.next.last = mb.last;
-			if(mb == head){
-				head = mb.next;
-			}
-			if(mb == tail){
-				tail = mb.last;
-			}
-		}
-		counter--;
-		return mb;
+		return null;
 	}
 	MemBlock insert(MemBlock location, MemBlock mb){
 		if(mb == null) return null;
-		if(location == null){
-			if(counter == 0){
-				mb.last = mb;
-				mb.next = mb;
-				head = mb;
-				tail = mb;
-			}
-			else{
-				mb.last = tail;
-				mb.next = head;
-				head.last = mb;
-				tail.next = mb;
-				head = mb;
-			}
+		if(location == null) {
+			list.add(0, mb);
 		}
-		else{
-			mb.last = location;
-			mb.next = location.next;
-			location.next = mb;
-			mb.next.last = mb;
-			if(mb.last == tail){
-				tail = mb;
+		else {
+			int loc = list.indexOf(location);
+			if(loc < 0) {
+				return null;
 			}
+			list.add(loc + 1, mb);
 		}
-		counter++;
 		return mb;
 	}
 	MemBlock add(MemBlock mb){
 		if(mb == null) return null;
-		if(counter == 0){
-			mb.last = mb;
-			mb.next = mb;
-			head = mb;
-			tail = mb;
-		}
-		else{
-			mb.last = tail;
-			mb.next = head;
-			tail.next = mb;
-			head.last = mb;
-			tail = mb;
-		}
-		counter++;
+		list.add(mb);
 		return mb;
 	}
 	MemBlock findLargest(int size){
 		MemBlock product = null;
-		MemBlock itmb = head;
 		int currentSize = 0;
-		for(int i = 0; i != counter; i++){
-			if(itmb.size >= size && itmb.size > currentSize){
+		for(MemBlock itmb: list) {
+			if(itmb.size >= size && itmb.size > currentSize) {
 				product = itmb;
 				currentSize = product.size;
 			}
-			itmb = itmb.next;
 		}
 		return product;
 	}
 	MemBlock findNext(MemBlock start, int size){
 		if(start == null){
-			start = head;
+			start = head();
 		}
 		MemBlock itmb = start;
-		for(int i = 0; i != counter; i++){
+		for(int i = 0; i != counter(); i++){
 			if(itmb.size >= size){
 				return itmb;
 			}
-			itmb = itmb.next;
+			itmb = next(itmb);
 		}
 		return null;
 	}
 	MemBlock findByTid(int tid){
-		MemBlock itmb = head;
-		for(int i = 0; i != counter; i++){
-			if(itmb.tid == tid){
+		for(MemBlock itmb:list) {
+			if(itmb.tid == tid) {
 				return itmb;
 			}
-			itmb = itmb.next;
 		}
 		return null;
 	}
 	boolean clear(){
-		head = null;
-		tail = null;
-		counter = 0;
+		list.clear();
 		return true;
+	}
+	MemBlock head() {
+		if(list.size() == 0) {
+			return null;
+		}
+		else {
+			return list.get(0);
+		}
+	}
+	MemBlock tail() {
+		if(list.size() == 0) {
+			return null;
+		}
+		else {
+			return list.get(list.size() - 1);
+		}
+	}
+	int counter() {
+		return list.size();
+	}
+	MemBlock last(MemBlock mb) {
+		int loc = list.indexOf(mb);
+		if(loc < 0) {
+			return null;
+		}
+		loc--;
+		if(loc < 0) {
+			loc += list.size();
+		}
+		return list.get(loc);
+	}
+	MemBlock next(MemBlock mb) {
+		int loc = list.indexOf(mb);
+		if(loc < 0) {
+			return null;
+		}
+		loc++;
+		if(loc >= list.size()) {
+			loc -= list.size();
+		}
+		return list.get(loc);
 	}
 }
 
@@ -600,8 +583,6 @@ class MemBlock{
 	int tid = -1;
 	int start = 0;
 	int size = 0;
-	MemBlock last = null;
-	MemBlock next = null;
 	MemBlock(int t, int s, int l){
 		tid = t;
 		start = s;
