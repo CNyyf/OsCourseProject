@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.file;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,6 +20,8 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
+
+import osmanagement.main.FuctionItem;
 
 public class DocSimulator implements FuctionItem {
 	private static final int WID1 = 200; 

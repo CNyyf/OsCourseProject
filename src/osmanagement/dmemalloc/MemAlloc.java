@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.dmemalloc;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -14,6 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import osmanagement.main.FuctionItem;
 
 public class MemAlloc implements FuctionItem {
 	private volatile MemList freeList = new MemList();//MemBlock(-1, 0, MEMORY_SIZE);

@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.file;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

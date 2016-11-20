@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.main;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,6 +6,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+
+import osmanagement.dmemalloc.MemAlloc;
+import osmanagement.file.DocSimulator;
+import osmanagement.pagging.Paging;
+import osmanagement.traffic.TrafficLine;
 
 public class StartInterface {
 	private JFrame frame;

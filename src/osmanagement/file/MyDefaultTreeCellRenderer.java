@@ -1,12 +1,10 @@
-package osmanagement;
+package osmanagement.file;
 
 import java.awt.Component;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-
-import osmanagement.FCB;
 
 public class MyDefaultTreeCellRenderer extends DefaultTreeCellRenderer  
 {

@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.traffic;
 
 import java.awt.Color;
 import java.awt.Panel;
@@ -11,6 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+
+import osmanagement.main.FuctionItem;
 
 public class TrafficLine implements FuctionItem{
 	static final int HALF_LINE_NUMBER = 2;//车道数，在开始时可以更改

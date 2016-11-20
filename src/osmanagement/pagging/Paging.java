@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.pagging;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -12,9 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import osmanagement.Instruction;
-import osmanagement.Page;
-import osmanagement.Paging;
+import osmanagement.main.FuctionItem;
 
 public class Paging implements FuctionItem {
 	Page memory[] = new Page[PforMEM];

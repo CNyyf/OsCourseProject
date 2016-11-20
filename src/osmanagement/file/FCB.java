@@ -1,4 +1,4 @@
-package osmanagement;
+package osmanagement.file;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-
-import osmanagement.FCB;
 
 public class FCB {
 	static final int BLOCK_SIZE = 10;
