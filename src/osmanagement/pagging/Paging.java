@@ -22,10 +22,7 @@ public class Paging implements FuctionItem {
 	int listLRU[] = new int[PforMEM];
 	int pc = 0;
 	int currentIad = 0;
-	int currentOp = 0;
-	int currentNum = 0;
-	int currentOpTimes = 0;
-	int currentOpCurrentTimes = 0;
+	Instruction currentIns = null;
 	int cycleTotal = 0;
 	int cycleLack = 0;
 	int fetchMethod = 0;
@@ -75,10 +72,8 @@ public class Paging implements FuctionItem {
 	
 	private boolean fetch(Instruction instruction){
 		if(instruction == null) return false;
-		currentOp = instruction.op;
-		currentNum = instruction.num;
-		currentOpTimes = instruction.opTimes;
-		currentOpCurrentTimes = instruction.opCurrentTimes++;
+		currentIns = instruction;
+		currentIns.opCurrentTimes++;
 		cycleTotal++;
 		return true;
 	}
@@ -150,17 +145,10 @@ public class Paging implements FuctionItem {
 	}
 	private boolean computePC(){
 		pc += 1;
-		if(currentOp == Instruction.NEXT){
+		if(currentIns == null){
+			return false;
 		}
-		else if(currentOp == Instruction.JUMP){
-			pc += currentNum;
-		}
-		else if(currentOp == Instruction.BRANCH){
-			if(currentOpCurrentTimes < currentOpTimes){
-				pc += currentNum;
-			}
-		}
-		else return false;
+		pc = currentIns.cComputePC(pc);
 		if(pc < 0){
 			pc = 0;
 		}
@@ -214,32 +202,28 @@ public class Paging implements FuctionItem {
 			for(int j = 0; j != IperP; j++){
 				int rNum = randNum.nextInt(5);
 				if(rNum < 3){
-					disk[i].instruction[j].op = Instruction.NEXT;
+					disk[i].instruction[j] = new InsNext();
 				}
 				else if(rNum < 4){
-					disk[i].instruction[j].op = Instruction.JUMP;
-					disk[i].instruction[j].num = randNum.nextInt(JUMP_NUM);
+					disk[i].instruction[j] = new InsJump();
+					if(i >= PforDISK - JUMP_PAGE) {
+						disk[i].instruction[j].num = (PforDISK - i) * IperP;
+					}
+					else {
+						disk[i].instruction[j].num = randNum.nextInt(JUMP_NUM);
+					}
 				}
 				else{
-					disk[i].instruction[j].op = Instruction.BRANCH;
-					disk[i].instruction[j].num = randNum.nextInt(BRANCH_NUM) - BRANCH_NUM;
+					disk[i].instruction[j] = new InsBranch();
+					if(i < BRANCH_PAGE) {
+						disk[i].instruction[j].num = 0 - i * IperP;
+					}
+					else {
+						disk[i].instruction[j].num = randNum.nextInt(BRANCH_NUM) - BRANCH_NUM;
+					}
 					disk[i].instruction[j].opTimes = randNum.nextInt(BRANCH_TIMES);
 				}
 				//System.out.println(disk[i].instruction[j].op + "    " + disk[i].instruction[j].num);
-			}
-		}
-		for(int i = 0; i != BRANCH_PAGE; i++){
-			for(int j = 0; j != IperP; j++){
-				if(disk[i].instruction[j].op == Instruction.BRANCH){
-					disk[i].instruction[j].num = 0 - i * IperP;
-				}
-			}
-		}
-		for(int i = PforDISK - JUMP_PAGE; i != PforDISK; i++){
-			for(int j = 0; j != IperP; j++){
-				if(disk[i].instruction[j].op == Instruction.JUMP){
-					disk[i].instruction[j].num = (PforDISK - i) * IperP;
-				}
 			}
 		}
 		return true;
@@ -266,8 +250,7 @@ public class Paging implements FuctionItem {
 			pc = 0;
 		}
 		currentIad = 0;
-		currentOp = 0;
-		currentNum = 0;
+		currentIns = null;
 		cycleTotal = 0;
 		cycleLack = 0;
 		paint();
@@ -303,7 +286,7 @@ public class Paging implements FuctionItem {
 			textCurrentOp.setText(TOTAL + ". 终止程序");
 		}
 		else{
-			textCurrentOp.setText(currentIad + ". " + Instruction.getString(currentOp, currentNum));
+			textCurrentOp.setText(currentIad + ". " + currentGetString());
 		}
 		textCurrentPC.setText("" + pc);
 		textCycleTotal.setText("" + cycleTotal);
@@ -530,6 +513,36 @@ public class Paging implements FuctionItem {
 		p.init();
 	}
 	
+//	int currentOp() {
+//		if(currentIns != null) {
+//			return currentIns.op;
+//		}
+//		return 0;
+//	}
+	String currentGetString() {
+		if(currentIns != null) {
+			return currentIns.getString();
+		}
+		return "NULL";
+	}
+	int currentNum() {
+		if(currentIns != null) {
+			return currentIns.num;
+		}
+		return 0;
+	}
+	int currentOpTimes() {
+		if(currentIns != null) {
+			return currentIns.opTimes;
+		}
+		return 0;
+	}
+	int currentOpCurrentTimes() {
+		if(currentIns != null) {
+			return currentIns.opCurrentTimes;
+		}
+		return 0;
+	}
 }
 
 class Page{
@@ -544,26 +557,48 @@ class Page{
 }
 
 class Instruction{
-	int op = 0;
+	//int op = 0;
 	int num = 0;
 	int opTimes = 0;
 	int opCurrentTimes = 0;
 	final static int NEXT = 0;
 	final static int JUMP = 1;
 	final static int BRANCH = 2;
-	static String getString(int o, int n){
-		switch(o){
-		case NEXT:
-			return "顺序执行";
-		case JUMP:
-			return "无条件后移" + n + "条";
-		case BRANCH:
-			return "条件前移" + n + "条";
-		default:
-			return "NULL";
-		}
+	String cGetString(int n) {
+		return null;
 	}
 	String getString(){
-		return getString(op, num);
+		return cGetString(num);
+	}
+	int cComputePC(int currentPc) {
+		return -1;
+	}
+}
+
+class InsNext extends Instruction{
+	String cGetString(int n){
+		return "顺序执行";
+	}
+	int cComputePC(int currentPc) {
+		return currentPc;
+	}
+}
+class InsJump extends Instruction{
+	String cGetString(int n){
+		return "无条件后移" + n + "条";
+	}
+	int cComputePC(int currentPc) {
+		return currentPc + num;
+	}
+}
+class InsBranch extends Instruction{
+	String cGetString(int n){
+		return "条件前移" + n + "条";
+	}
+	int cComputePC(int currentPc) {
+		if(opCurrentTimes < opTimes){
+			return currentPc + num;
+		}
+		return currentPc;
 	}
 }
