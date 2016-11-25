@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -31,7 +32,7 @@ public class Paging implements FuctionItem {
 	private final static int PforMEM = 4;
 	private final static int PforDISK = 32;
 	private final static int TOTAL = IperP * PforDISK;
-	private static Random randNum = new Random();
+	protected static Random randNum = new Random();
 	private boolean flagAutoOp = false;
 	
 	private final static int BORDER = 20;
@@ -70,7 +71,15 @@ public class Paging implements FuctionItem {
 	private static Color colorUnEditable = Color.lightGray;
 	private DecimalFormat df = new DecimalFormat( "0.00000 ");
 	
-	private boolean fetch(Instruction instruction){
+	private ArrayList<Instruction> insTemplates = new ArrayList<Instruction>();
+	private Instruction createIns(int index) {
+		if(index > -1 && index < insTemplates.size()) {
+			return insTemplates.get(index).create();
+		}
+		return null;
+	}
+	
+ 	private boolean fetch(Instruction instruction){
 		if(instruction == null) return false;
 		currentIns = instruction;
 		currentIns.opCurrentTimes++;
@@ -193,35 +202,17 @@ public class Paging implements FuctionItem {
 	}
 	
 	private boolean setProgram(){
-		final int JUMP_PAGE = 4;
-		final int JUMP_NUM = IperP * JUMP_PAGE;
-		final int BRANCH_PAGE = 6;
-		final int BRANCH_NUM = IperP * BRANCH_PAGE;
-		final int BRANCH_TIMES = 5;
 		for(int i = 0; i != PforDISK; i++){
 			for(int j = 0; j != IperP; j++){
 				int rNum = randNum.nextInt(5);
 				if(rNum < 3){
-					disk[i].instruction[j] = new InsNext();
+					disk[i].instruction[j] = createIns(0);
 				}
 				else if(rNum < 4){
-					disk[i].instruction[j] = new InsJump();
-					if(i >= PforDISK - JUMP_PAGE) {
-						disk[i].instruction[j].num = (PforDISK - i) * IperP;
-					}
-					else {
-						disk[i].instruction[j].num = randNum.nextInt(JUMP_NUM);
-					}
+					disk[i].instruction[j] = createIns(1);
 				}
 				else{
-					disk[i].instruction[j] = new InsBranch();
-					if(i < BRANCH_PAGE) {
-						disk[i].instruction[j].num = 0 - i * IperP;
-					}
-					else {
-						disk[i].instruction[j].num = randNum.nextInt(BRANCH_NUM) - BRANCH_NUM;
-					}
-					disk[i].instruction[j].opTimes = randNum.nextInt(BRANCH_TIMES);
+					disk[i].instruction[j] = createIns(2);
 				}
 				//System.out.println(disk[i].instruction[j].op + "    " + disk[i].instruction[j].num);
 			}
@@ -310,6 +301,10 @@ public class Paging implements FuctionItem {
 		return true;
 	}
 	public void init(){
+		insTemplates.add(new InsNext());
+		insTemplates.add(new InsJump());
+		insTemplates.add(new InsBranch());
+		
 		for(int i = 0; i != PforDISK; i++){
 			disk[i] = new Page(i);
 		}
@@ -561,9 +556,7 @@ class Instruction{
 	int num = 0;
 	int opTimes = 0;
 	int opCurrentTimes = 0;
-	final static int NEXT = 0;
-	final static int JUMP = 1;
-	final static int BRANCH = 2;
+	protected static Random randNum = new Random();
 	String cGetString(int n) {
 		return null;
 	}
@@ -572,6 +565,9 @@ class Instruction{
 	}
 	int cComputePC(int currentPc) {
 		return -1;
+	}
+	Instruction create() {
+		return null;
 	}
 }
 
@@ -582,16 +578,30 @@ class InsNext extends Instruction{
 	int cComputePC(int currentPc) {
 		return currentPc;
 	}
+	Instruction create() {
+		Instruction product = new InsNext();
+		return product;
+	}
 }
 class InsJump extends Instruction{
+	final int JUMP_PAGE = 4;
+	final int JUMP_NUM = Paging.IperP * JUMP_PAGE;
 	String cGetString(int n){
 		return "无条件后移" + n + "条";
 	}
 	int cComputePC(int currentPc) {
 		return currentPc + num;
 	}
+	Instruction create() {
+		Instruction product = new InsJump();
+		product.num = randNum.nextInt(JUMP_NUM);
+		return product;
+	}
 }
 class InsBranch extends Instruction{
+	final int BRANCH_PAGE = 6;
+	final int BRANCH_TIMES = 5;
+	final int BRANCH_NUM = Paging.IperP * BRANCH_PAGE;
 	String cGetString(int n){
 		return "条件前移" + n + "条";
 	}
@@ -600,5 +610,11 @@ class InsBranch extends Instruction{
 			return currentPc + num;
 		}
 		return currentPc;
+	}
+	Instruction create() {
+		Instruction product = new InsBranch();
+		product.num = randNum.nextInt(BRANCH_NUM) - BRANCH_NUM;
+		product.opTimes = randNum.nextInt(BRANCH_TIMES);
+		return product;
 	}
 }
