@@ -15,9 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import osmanagement.main.FuctionItem;
+import osmanagement.main.FunctionItem;
 
-public class MemAlloc implements FuctionItem {
+public class MemAlloc implements FunctionItem {
 	private volatile MemList freeList = new MemList();//MemBlock(-1, 0, MEMORY_SIZE);
 	private volatile MemList busyList = new MemList();
 

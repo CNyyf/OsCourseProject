@@ -1,5 +1,5 @@
 package osmanagement.main;
 
-public interface FuctionItem {
+public interface FunctionItem {
 	void excuteFuction();
 }

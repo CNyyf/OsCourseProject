@@ -13,9 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import osmanagement.main.FuctionItem;
+import osmanagement.main.FunctionItem;
 
-public class Paging implements FuctionItem {
+public class Paging implements FunctionItem {
 	Page memory[] = new Page[PforMEM];
 	Page disk[] = new Page[PforDISK];
 	boolean memoryFull = false;
@@ -568,53 +568,5 @@ class Instruction{
 	}
 	Instruction create() {
 		return null;
-	}
-}
-
-class InsNext extends Instruction{
-	String cGetString(int n){
-		return "顺序执行";
-	}
-	int cComputePC(int currentPc) {
-		return currentPc;
-	}
-	Instruction create() {
-		Instruction product = new InsNext();
-		return product;
-	}
-}
-class InsJump extends Instruction{
-	final int JUMP_PAGE = 4;
-	final int JUMP_NUM = Paging.IperP * JUMP_PAGE;
-	String cGetString(int n){
-		return "无条件后移" + n + "条";
-	}
-	int cComputePC(int currentPc) {
-		return currentPc + num;
-	}
-	Instruction create() {
-		Instruction product = new InsJump();
-		product.num = randNum.nextInt(JUMP_NUM);
-		return product;
-	}
-}
-class InsBranch extends Instruction{
-	final int BRANCH_PAGE = 6;
-	final int BRANCH_TIMES = 5;
-	final int BRANCH_NUM = Paging.IperP * BRANCH_PAGE;
-	String cGetString(int n){
-		return "条件前移" + n + "条";
-	}
-	int cComputePC(int currentPc) {
-		if(opCurrentTimes < opTimes){
-			return currentPc + num;
-		}
-		return currentPc;
-	}
-	Instruction create() {
-		Instruction product = new InsBranch();
-		product.num = randNum.nextInt(BRANCH_NUM) - BRANCH_NUM;
-		product.opTimes = randNum.nextInt(BRANCH_TIMES);
-		return product;
 	}
 }

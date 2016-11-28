@@ -12,9 +12,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import osmanagement.main.FuctionItem;
+import osmanagement.main.FunctionItem;
 
-public class TrafficLine implements FuctionItem{
+public class TrafficLine implements FunctionItem{
 	static final int HALF_LINE_NUMBER = 2;//车道数，在开始时可以更改
 	static final int LINE_NUMBER = HALF_LINE_NUMBER * 2;
 	static final int IN_LENGTH = 6;

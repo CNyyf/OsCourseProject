@@ -21,9 +21,9 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
-import osmanagement.main.FuctionItem;
+import osmanagement.main.FunctionItem;
 
-public class DocSimulator implements FuctionItem {
+public class DocSimulator implements FunctionItem {
 	private static final int WID1 = 200; 
 	private static final int WID2 = WID1 + 230;
 	private static final int WID3 = WID2 + 230;
