@@ -2,7 +2,6 @@ package osmanagement.dmemalloc;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
@@ -223,8 +222,7 @@ public class MemAlloc implements FunctionItem {
 		clear();
 		flagAutoOp = true;
 		for(;flagAutoOp;){
-			Thread thread = new Thread(new Runnable()
-				{public void run(){autoOp();}});
+			Thread thread = new Thread(()->{autoOp();});
 			thread.start();
 			try {
 				Thread.sleep(500);
@@ -388,8 +386,7 @@ public class MemAlloc implements FunctionItem {
 		buttonClear.setVisible(true);
 		buttonClear.setBounds(BORDER*3 + MEMORY_WIDTH + FIELD_WIDTH*2, BORDER + FIELD_HEIGHT*14 + OUTPUT_HEIGHT, FIELD_WIDTH*2, FIELD_HEIGHT);
 		
-		buttonAllocate.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+		buttonAllocate.addActionListener((ActionEvent e)->
 			{
 				String s = textAllocSize.getText();
 				textAllocSize.setText("");
@@ -400,9 +397,8 @@ public class MemAlloc implements FunctionItem {
 				}
 				int size = Integer.parseInt(s);
 				methodAllocate(tidForAlloc, size);
-			}});
-		buttonFree.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonFree.addActionListener((ActionEvent e)->
 			{
 				String s = textFreeTid.getText();
 				textFreeTid.setText("");
@@ -413,57 +409,47 @@ public class MemAlloc implements FunctionItem {
 				}
 				int tid = Integer.parseInt(s);
 				freeMemByTid(tid);
-			}});
-		buttonAllocateAuto.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonAllocateAuto.addActionListener((ActionEvent e)->
 			{
 				allocateMemRandom();
-			}});
-		buttonFreeAuto.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonFreeAuto.addActionListener((ActionEvent e)->
 			{
 				freeMemRandom();
-			}});
-		buttonBestFit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonBestFit.addActionListener((ActionEvent e)->
 			{
 				allocateMethod = 0;
 				textCurrentMethod.setText("当前算法：最佳适应分配");
 				clear();
-			}});
-		buttonFirstFit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonFirstFit.addActionListener((ActionEvent e)->
 			{
 				allocateMethod = 1;
 				textCurrentMethod.setText("当前算法：最先适应分配");
 				clear();
-			}});
-		buttonAutoOp.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonAutoOp.addActionListener((ActionEvent e)->
 			{
 				if(!flagAutoOp){
-					Thread thread = new Thread(new Runnable()
-						{public void run(){autoOpLoop();}});
+					Thread thread = new Thread(()->{autoOpLoop();});
 					thread.start();
 				}
-			}});
-		buttonAutoOpStop.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonAutoOpStop.addActionListener((ActionEvent e)->
 			{
 				flagAutoOp = false;
-			}});
-		buttonExample.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonExample.addActionListener((ActionEvent e)->
 			{
-				Thread thread = new Thread(new Runnable()
-					{public void run(){example();}});
+				Thread thread = new Thread(()->{example();});
 				thread.start();
-			}});
-		buttonClear.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
+			});
+		buttonClear.addActionListener((ActionEvent e)->
 			{				
 				clear();
-			}});
+			});
 		clear();
 	}
 	@Override

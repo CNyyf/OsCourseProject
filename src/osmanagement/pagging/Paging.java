@@ -2,7 +2,6 @@ package osmanagement.pagging;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
@@ -423,66 +422,49 @@ public class Paging implements FunctionItem {
 		frame.add(buttonReProgram);
 		buttonReProgram.setBounds(BORDER + DISK_WIDTH + GAP_WIDTH, BORDER + MEM_HEIGHT + FIELD_HEIGHT*15, FIELD_WIDTH*3/2, FIELD_HEIGHT);
 		
-		buttonOp1.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonOp1.addActionListener((ActionEvent e)->{
 				operateOnce();
 				paint();
-			}
-		});
-		buttonOp10.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonOp10.addActionListener((ActionEvent e)->{
 				for(int i = 0; i != 10; i++){
 					operateOnce();
 					paint();
 				}
-			}
-		});
-		buttonOp50.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonOp50.addActionListener((ActionEvent e)->{
 				for(int i = 0; i != 50; i++){
 					operateOnce();
 					paint();
 				}
-			}
-		});
-		buttonOpEnd.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonOpEnd.addActionListener((ActionEvent e)->{
 				for(; currentIad != TOTAL; ){
 					operateOnce();
 					paint();
 				}
-			}
-		});
-		buttonFIFO.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonFIFO.addActionListener((ActionEvent e)->{
 				fetchMethod = 0;
 				reStart(0);
-			}
-		});
-		buttonLRU.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonLRU.addActionListener((ActionEvent e)->{
 				fetchMethod = 1;
 				reStart(0);
 				paint();
-			}
-		});
-		buttonAutoOp.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonAutoOp.addActionListener((ActionEvent e)->{
 				Thread thread = new Thread(new Runnable(){
 					public void run(){
 						autoOp();
 					}
 				});
 				thread.start();
-			}
-		});
-		buttonAutoOpStop.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonAutoOpStop.addActionListener((ActionEvent e)->{
 				flagAutoOp = false;
-			}
-		});
-		buttonReStart.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonReStart.addActionListener((ActionEvent e)->{
 				String s = textStartIad.getText();
 				int startIad = 0;
 				textStartIad.setText("");
@@ -491,15 +473,12 @@ public class Paging implements FunctionItem {
 					startIad = Integer.parseInt(s);
 				}
 				reStart(startIad);
-			}
-		});
-		buttonReProgram.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+			});
+		buttonReProgram.addActionListener((ActionEvent e)->{
 				setProgram();
 				reStart(0);
 				textOutput.setText("成功重新编写代码");
-			}
-		});
+			});
 		reStart(0);
 	}
 	@Override

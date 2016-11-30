@@ -1,7 +1,6 @@
 package osmanagement.main;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -47,26 +46,10 @@ public class StartInterface {
 		buttons[2].setText("页式存储管理");
 		buttons[3].setText("文件系统模拟");
 		
-		buttons[0].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				executeFuncItem(0);
-			}});
-		buttons[1].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				executeFuncItem(1);
-			}});
-		buttons[2].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				executeFuncItem(2);
-			}});
-		buttons[3].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
-				executeFuncItem(3);
-			}});
+		buttons[0].addActionListener((ActionEvent e)->{executeFuncItem(0);});
+		buttons[1].addActionListener((ActionEvent e)->{executeFuncItem(1);});
+		buttons[2].addActionListener((ActionEvent e)->{executeFuncItem(2);});
+		buttons[3].addActionListener((ActionEvent e)->{executeFuncItem(3);});
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

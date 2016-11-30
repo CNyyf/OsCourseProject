@@ -3,7 +3,6 @@ package osmanagement.file;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -17,7 +16,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -83,15 +81,13 @@ public class DocSimulator implements FunctionItem {
 		scrollTree.setPreferredSize(new Dimension(300, 200));
 		scrollTree.setBounds(0, 0, WID1, HEI3);
 		
-		tree.addTreeSelectionListener(new TreeSelectionListener() {	 
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
+		tree.addTreeSelectionListener((TreeSelectionEvent e)-> {
             	tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);            	
                 currentSelected = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 updateText(textPad[0], null);
                 //System.out.println("你选择了：" + fcb.toString()); 
             }
-        });
+        );
 		
 		for(int i = 0; i != 2; i++){
 			textPad[i] = new JTextArea();
@@ -128,8 +124,7 @@ public class DocSimulator implements FunctionItem {
 		buttonCreateFile = new JButton("新建文件");
 		frame.add(buttonCreateFile);
 		buttonCreateFile.setBounds(WID1 + WID_GAP, HEI_F * 3,WID_B, HEI_B);
-		buttonCreateFile.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonCreateFile.addActionListener((ActionEvent e)->{
 				String tempName = getLegalNameFromText(textName);
 				if(tempName == null){
 					return;
@@ -144,14 +139,12 @@ public class DocSimulator implements FunctionItem {
 				}else{
 					output[0].setText("文件"+ node +"创建成功!");
 				}
-			}
-		});
+			});
 
 		buttonCreateFolder = new JButton("新建文件夹");
 		frame.add(buttonCreateFolder);
 		buttonCreateFolder.setBounds(WID1 + WID_GAP, HEI_F * 4, WID_B, HEI_B);
-		buttonCreateFolder.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonCreateFolder.addActionListener((ActionEvent e)->{
 				String tempName = getLegalNameFromText(textName);
 				if(tempName == null){
 					return;
@@ -166,14 +159,12 @@ public class DocSimulator implements FunctionItem {
 				}else{
 					output[0].setText("文件夹"+ node +"创建成功!");
 				}
-			}
-		});
+			});
 
 		buttonRename = new JButton("重命名");
 		frame.add(buttonRename);
 		buttonRename.setBounds(WID1 + WID_GAP + WID_F, HEI_F * 3, WID_B, HEI_F + HEI_B);
-		buttonRename.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonRename.addActionListener((ActionEvent e)->{
 				String tempName = getLegalNameFromText(textName);
 				if(tempName == null){
 					return;
@@ -189,36 +180,30 @@ public class DocSimulator implements FunctionItem {
                 }else{
                     return;
                 }
-			}
-		});
+			});
 			
 		buttonShear = new JButton("剪切");
 		frame.add(buttonShear);
 		buttonShear.setBounds(WID1 + WID_GAP, HEI_F * 6, WID_B, HEI_B);
-		buttonShear.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){ 
+		buttonShear.addActionListener((ActionEvent e)->{ 
 				shearPlate = currentSelected;
 				flagIsShear = true;
 				output[1].setText("已选中,可移动: " + shearPlate);
-			}
-		});
+			});
 		
 		buttonCopy = new JButton("复制");
 		frame.add(buttonCopy);
 		buttonCopy.setBounds(WID1 + WID_GAP, HEI_F * 7, WID_B , HEI_B);
-		buttonCopy.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonCopy.addActionListener((ActionEvent e)->{
 				shearPlate = currentSelected;
 				flagIsShear = false;
 				output[1].setText("已选中,可复制: " + shearPlate);
-			}
-		});
+			});
 		
 		buttonPaste = new JButton("粘贴");
 		frame.add(buttonPaste);
 		buttonPaste.setBounds(WID1 + WID_GAP + WID_F, HEI_F * 6, WID_B, HEI_F + HEI_B);
-		buttonPaste.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){ 
+		buttonPaste.addActionListener((ActionEvent e)->{ 
 				if(currentSelected == null){
 					return;
 				}
@@ -248,23 +233,19 @@ public class DocSimulator implements FunctionItem {
 				}
 				output[1].setText("剪贴板中无项目");
 				shearPlate = null;
-			}
-		});
+			});
 	
 		buttonOpenFile = new JButton("打开文件");
 		frame.add(buttonOpenFile);
 		buttonOpenFile.setBounds(WID1 + WID_GAP, HEI_F * 8, WID_B, HEI_B);
-		buttonOpenFile.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonOpenFile.addActionListener((ActionEvent e)->{
 				openFileInFrame(currentSelected);
-			}
-		});
+			});
 		
 		buttonDelete = new JButton("删除");
 		frame.add(buttonDelete);
 		buttonDelete.setBounds(WID1 + WID_GAP + WID_F, HEI_F * 8, WID_B, HEI_B);
-		buttonDelete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonDelete.addActionListener((ActionEvent e)->{
 				if(currentSelected == root){
 					output[0].setText("根目录请谨慎操作!");
 					JOptionPane.showConfirmDialog (null, "根目录请谨慎操作!如有必要请点击格式化!", "友情提示", JOptionPane.YES_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -283,32 +264,26 @@ public class DocSimulator implements FunctionItem {
                 }else{
                     return;
                 }				
-			}
-		});
+			});
 		
 		buttonHelp = new JButton("关于");
 		frame.add(buttonHelp);
 		buttonHelp.setBounds(WID1 + WID_GAP + WID_F, HEI2 + HEI_F * 2, WID_B, HEI_B);
-		buttonHelp.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonHelp.addActionListener((ActionEvent e)->{
 				openHelpFrame();
-			}
-		});
+			});
 		
 		buttonSystemAttributes = new JButton("系统属性");
 		frame.add(buttonSystemAttributes);
 		buttonSystemAttributes.setBounds(WID2 + WID_GAP, HEI2 + HEI_F * 2, WID_B, HEI_B);
-		buttonSystemAttributes.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonSystemAttributes.addActionListener((ActionEvent e)->{
 				openSystemAttributes();
-			}
-		});
+			});
 		
 		buttonFormat = new JButton("格式化");
 		frame.add(buttonFormat);
 		buttonFormat.setBounds(WID2 + WID_GAP + WID_F, HEI2 + HEI_F * 2, WID_B, HEI_B);
-		buttonFormat.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonFormat.addActionListener((ActionEvent e)->{
 				int exi = JOptionPane.showConfirmDialog (null, "您确定要进行格式化（操作后无法恢复）", "友情提示", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (exi == JOptionPane.YES_OPTION){
                 	exi = JOptionPane.showConfirmDialog (null, "请再次确认!格式化操作无法恢复,请谨慎操作!", "友情提示", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -321,8 +296,7 @@ public class DocSimulator implements FunctionItem {
                 }else{
                     return;
                 }
-			}
-		});
+			});
 		
 		update();
 		//FCB.storeFCB(root, "FCB.txt");
@@ -419,16 +393,14 @@ public class DocSimulator implements FunctionItem {
 		JButton buttonStoreFileSub = new JButton("保存文件");
 		subFrame.add(buttonStoreFileSub);
 		buttonStoreFileSub.setBounds(20, 320, 100, 20);
-		buttonStoreFileSub.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		buttonStoreFileSub.addActionListener((ActionEvent e)->{
 				if(FCB.storeFile(text.getText(), node) == -1){
 					output[0].setText("磁盘空间不足");
 					JOptionPane.showConfirmDialog (null, "磁盘空间不足，无法保存!", "友情提示", JOptionPane.YES_OPTION, JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 				update();
-			}
-		});
+			});
 		
 		subFrame.addWindowListener (new WindowAdapter ()
         {

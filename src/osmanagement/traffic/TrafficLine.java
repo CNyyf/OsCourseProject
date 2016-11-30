@@ -331,15 +331,11 @@ public class TrafficLine implements FunctionItem{
 			button[i].setVisible(true);
 			frame.add(button[i]);
 		}
-		button[0].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
+		button[0].addActionListener((ActionEvent e)->{
 				if(randomSetSign == true)
 				randomSetSign = false;
-			}});
-		button[1].addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e)
-			{
+			});
+		button[1].addActionListener((ActionEvent e)->{
 				if(randomSetSign == false)
 				{
 					randomSetSign = true;
@@ -350,8 +346,7 @@ public class TrafficLine implements FunctionItem{
 					thSet1.start();
 					thSet2.start();
 				}
-			}
-	});
+			});
 		button[2].addActionListener(new SetCarButton(2, 0, tl1));
 		button[3].addActionListener(new SetCarButton(2, 1, tl1));
 		button[4].addActionListener(new SetCarButton(0, 0, tl1));
@@ -525,22 +520,14 @@ public class TrafficLine implements FunctionItem{
 		TrafficLine tl1 = new TrafficLine(0);
 		TrafficLine tl2 = new TrafficLine(1);
 		drawInit(tl1, tl2);
-		Thread thTurn = new Thread(new Runnable()
-			{public void run(){TrafficLine.turnSignal();}});
-		Thread thSet1 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sRandomSetCar(tl1);}});
-		Thread thPopC1 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sPopCarOnCross(tl1, tl2);}});
-		Thread thPopL1 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sPopCarOnLine(tl1);}});
-		Thread thSet2 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sRandomSetCar(tl2);}});
-		Thread thPopC2 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sPopCarOnCross(tl2, tl1);}});
-		Thread thPopL2 = new Thread(new Runnable()
-			{public void run(){TrafficLine.sPopCarOnLine(tl2);}});
-		Thread thDrawFrame = new Thread(new Runnable()
-			{public void run(){TrafficLine.drawFrame(tl1, tl2);}});
+		Thread thTurn = new Thread(()->{TrafficLine.turnSignal();});
+		Thread thSet1 = new Thread(()->{TrafficLine.sRandomSetCar(tl1);});
+		Thread thPopC1 = new Thread(()->{TrafficLine.sPopCarOnCross(tl1, tl2);});
+		Thread thPopL1 = new Thread(()->{TrafficLine.sPopCarOnLine(tl1);});
+		Thread thSet2 = new Thread(()->{TrafficLine.sRandomSetCar(tl2);});
+		Thread thPopC2 = new Thread(()->{TrafficLine.sPopCarOnCross(tl2, tl1);});
+		Thread thPopL2 = new Thread(()->{TrafficLine.sPopCarOnLine(tl2);});
+		Thread thDrawFrame = new Thread(()->{TrafficLine.drawFrame(tl1, tl2);});
 		thTurn.start();
 		thSet1.start();
 		thPopC1.start();
