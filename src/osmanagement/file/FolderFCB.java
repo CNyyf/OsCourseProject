@@ -1,16 +1,20 @@
 package osmanagement.file;
 
+import java.util.ArrayList;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class FolderFCB extends FCB {
-	
+    ArrayList<FCB> members = new ArrayList<FCB>();
 	public FolderFCB(String n) {
-		super(n, FCB.FOLDER);
+		super(n);
 	}
 	DefaultMutableTreeNode cCreateFCB(String n, int t) {
     	String name = getName(this.theNode, n);
-    	DefaultMutableTreeNode node = createNode(createFCB(name, t));
+    	FCB fcb = createFCB(name, t);
+    	DefaultMutableTreeNode node = createNode(fcb);
     	this.theNode.add(node);
+    	members.add(fcb);
     	return node;
 	}
     boolean cDeleteFCB() {
@@ -31,7 +35,9 @@ public class FolderFCB extends FCB {
     	String name = fcb.name;
     	fcb.name = getName(theNode, name);
     	node.removeFromParent();
+    	fcb.removeFromParent();
     	theNode.add(node);
+    	members.add(fcb);
     	return 1;
     }
     int cCopyFCB(DefaultMutableTreeNode node) {
@@ -47,5 +53,11 @@ public class FolderFCB extends FCB {
 			}
 		}
     	return 1;
+    }
+    public int getType(){
+    	return FOLDER;
+    }
+    ArrayList<FCB> members(){
+    	return members;
     }
 }

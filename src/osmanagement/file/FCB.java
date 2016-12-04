@@ -22,15 +22,13 @@ public class FCB {
     protected static String blocksFolderPath = "blocks";
 	static private String FCBPath = "blocks/FCB";
     String name;
-    private int type;
-    ArrayList<Integer> blocks = new ArrayList<Integer>();
+//    ArrayList<Integer> blocks = new ArrayList<Integer>();
     boolean isOpened = false;
-    public FCB(String n, int t) {
+    public FCB(String n) {
         name = n;
-        type = t;
     }
     public int getType(){
-    	return type;
+    	return -1;
     }
     public String toString() {
         return name;
@@ -123,9 +121,9 @@ public class FCB {
 					fcb.name = getName((DefaultMutableTreeNode) node.getParent(), "Untitled");
 				}
 				try {
-					bufferedwriter.write(fcb.toString() + " " + FCB.getParentPath(node) + " " + fcb.getType() + " " + fcb.blocks.size());
-					for(int i = 0; i != fcb.blocks.size(); i++){
-						bufferedwriter.write(" " + fcb.blocks.get(i));
+					bufferedwriter.write(fcb.toString() + " " + FCB.getParentPath(node) + " " + fcb.getType() + " " + fcb.blocksSize());
+					for(int i = 0; i != fcb.blocksSize(); i++){
+						bufferedwriter.write(" " + fcb.blocks().get(i));
 					}
 					bufferedwriter.newLine();
 					//System.out.println("Success write.");
@@ -184,7 +182,7 @@ public class FCB {
 						//System.out.println(address);
 						if(address > -1 && address < VOLUMN){
 							if(blockFree[address]){
-								fcb.blocks.add(new Integer(address));
+								fcb.blocks().add(new Integer(address));
 								blockFree[address] = false;
 								countBlockFree--;
 							}
@@ -344,6 +342,7 @@ public class FCB {
     	}
     	if(cDeleteFCB()) {
     		theNode.removeFromParent();
+    		((FCB)theNode.getUserObject()).removeFromParent();
     		return true;
     	}
     	return false;
@@ -387,11 +386,30 @@ public class FCB {
     	return 0;
     }
     int mainDeepCopyInto(DefaultMutableTreeNode parent) {
-    	DefaultMutableTreeNode newNode = createNode(createFCB(getName(parent, name), type));
+    	FCB fcb = createFCB(getName(parent, name), getType());
+    	DefaultMutableTreeNode newNode = createNode(fcb);
     	parent.add(newNode);
+    	((FCB)parent.getUserObject()).members().add(fcb);
     	return cDeepCopyInto(parent, newNode);
     }
     int cDeepCopyInto(DefaultMutableTreeNode parent, DefaultMutableTreeNode newNode) {
     	return 0;
+    }
+    ArrayList<Integer> blocks(){
+    	return null;
+    }
+    int blocksSize() {
+    	if(blocks() != null){
+    		return blocks().size();
+    	}
+    	else {
+    		return 0;
+    	}
+    }
+    ArrayList<FCB> members(){
+    	return null;
+    }
+    void removeFromParent() {
+    	((FCB)((DefaultMutableTreeNode)theNode.getParent()).getUserObject()).members().remove(this);
     }
 }

@@ -322,10 +322,10 @@ public class DocSimulator implements FunctionItem {
     	            }else{
         	            text1.append("打开状态:\t" + "未打开" + "\n");
     	            }
-    	            text1.append("文件大小:\t" + fcb.blocks.size() + "KB\n");
+    	            text1.append("文件大小:\t" + fcb.blocks().size() + "KB\n");
     	            text1.append("存储位置:\n");
-    	            for(int i = 0; i != fcb.blocks.size(); i++){
-    	            	text1.append(fcb.blocks.get(i) + ", ");
+    	            for(int i = 0; i != fcb.blocks().size(); i++){
+    	            	text1.append(fcb.blocks().get(i) + ", ");
     	            }
     	            text1.append("\n");
     	        }

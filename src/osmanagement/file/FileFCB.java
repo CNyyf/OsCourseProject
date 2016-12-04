@@ -6,14 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class FileFCB extends FCB {
-
+	ArrayList<Integer> blocks = new ArrayList<Integer>();
+	
 	public FileFCB(String n) {
-		super(n, FCB.FILE);
+		super(n);
 	}
     boolean cDeleteFCB() {
     	for(int i = 0; i != blocks.size(); i++){
@@ -123,8 +125,15 @@ public class FileFCB extends FCB {
     int cDeepCopyInto(DefaultMutableTreeNode parent, DefaultMutableTreeNode newNode) {
     	if(storeFile(openFile(theNode), newNode) == -1){
     		newNode.removeFromParent();
+    		((FCB)newNode.getUserObject()).removeFromParent();
     		return -1;
     	}
     	return 1;
+    }
+    public int getType(){
+    	return FILE;
+    }
+    ArrayList<Integer> blocks(){
+    	return blocks;
     }
 }
