@@ -319,13 +319,12 @@ public class FCB {
     DefaultMutableTreeNode theNode;//the DefaultMutableTreeNode which holds this FCB object
     //factory method
     static FCB createFCB(String n, int t) {
-    	if(t == FILE) {
+    	switch(t) {
+    	case FILE:
     		return new FileFCB(n);
-    	}
-    	else if(t == FOLDER) {
+    	case FOLDER:
     		return new FolderFCB(n);
-    	}
-    	else {
+    	default:
     		return null;
     	}
     }

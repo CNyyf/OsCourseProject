@@ -12,21 +12,19 @@ import osmanagement.file.DocSimulator;
 import osmanagement.pagging.Paging;
 import osmanagement.traffic.TrafficLine;
 
-public class StartInterface {
-	private static final int BTN_CNT = 4;
-	private static final int BTN_HIT = 40;
-	private static final int BTN_WID = 120;
-	private static final int BTN_Y = 90;
-	private static final int BTN_X = 20;
-	private JFrame frame;
-	private JLabel label = new JLabel();
-	private JButton[] buttons = new JButton[BTN_CNT];
-	private ArrayList<FunctionItem> funcItems = new ArrayList<FunctionItem>();
+public abstract class StartInterface {
 	
-	StartInterface(){
-		addFuncItems();
+	void execute(JFrame frame, ArrayList<FunctionItem> funcItems){
+		final int BTN_CNT = 4;
+		final int BTN_HIT = 40;
+		final int BTN_WID = 120;
+		final int BTN_Y = 90;
+		final int BTN_X = 20;
+		JLabel label = new JLabel();
+		JButton[] buttons = new JButton[BTN_CNT];
 		
-		frame = new JFrame("osManagement");
+		addFuncItems(funcItems);
+		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(BTN_X * (BTN_CNT + 2) + BTN_WID * BTN_CNT, 200);
 		frame.setVisible(true);
@@ -51,20 +49,19 @@ public class StartInterface {
 		buttons[2].addActionListener((ActionEvent e)->{executeFuncItem(2);});
 		buttons[3].addActionListener((ActionEvent e)->{executeFuncItem(3);});
 	}
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new StartInterface();
-	}
-	private void executeFuncItem(int index) {
+	void executeFuncItem(int index, JFrame frame, ArrayList<FunctionItem> funcItems) {
 		if(index > -1 && index < funcItems.size()) {
 			funcItems.get(index).excuteFuction();
 			frame.setVisible(false);
 		}
 	}
-	private void addFuncItems() {
+	void addFuncItems(ArrayList<FunctionItem> funcItems) {
 		funcItems.add(new TrafficLine());
 		funcItems.add(new MemAlloc());
 		funcItems.add(new Paging());
 		funcItems.add(new DocSimulator());
 	}
+	void execute(){}
+	void executeFuncItem(int index){}
+	void addFuncItems(){}
 }
